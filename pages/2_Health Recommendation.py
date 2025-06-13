@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+# from user_manager import get_latest_health_data # No longer directly fetching from DB for initial pre-fill
 
 if not st.session_state.get('authenticated'):
     st.warning('Please login first.')
@@ -16,7 +17,7 @@ def display_bmi_scale(bmi):
     """Menampilkan visualisasi skala BMI dan menyorot kategori pengguna."""
     st.write("---")
     st.subheader("Skala Kategori BMI")
-    
+
     # Menentukan kategori dan warna berdasarkan nilai BMI
     if bmi < 18.5:
         category = "Underweight"
@@ -72,53 +73,6 @@ def generate_recommendations(age, bmi, sbp, dbp, blood_sugar, is_smoker, is_drin
         recommendations.append("**Kondisi Anda Baik!**: Pertahankan terus gaya hidup sehat Anda!")
     return recommendations
 
-def get_relevant_health_news(is_smoker, is_drinker, bmi, age, sbp, dbp):
-    """Memilih berita kesehatan yang relevan berdasarkan kondisi pengguna."""
-    news_database = [
-        {
-            "id": "smoking",
-            "title": "Manfaat Berhenti Merokok Terasa Lebih Cepat dari Dugaan",
-            "summary": "Studi menunjukkan perbaikan signifikan pada fungsi paru-paru hanya dalam beberapa minggu setelah berhenti merokok.",
-            "link": "https://www.who.int/news-room/spotlight/more-than-100-reasons-to-quit-tobacco",
-            "icon": "🚭"
-        },
-        {
-            "id": "hypertension",
-            "title": "Diet DASH: Solusi Efektif untuk Mengontrol Hipertensi",
-            "summary": "Menerapkan pola makan Dietary Approaches to Stop Hypertension (DASH) terbukti ampuh menurunkan tekanan darah tinggi.",
-            "link": "https://www.kemkes.go.id/article/view/22082500001/pola-makan-dash-untuk-penderita-hipertensi.html",
-            "icon": "🩺"
-        },
-        {
-            "id": "general",
-            "title": "Pentingnya Tidur Cukup untuk Kesehatan Jangka Panjang",
-            "summary": "Tidur berkualitas selama 7-8 jam setiap malam dapat meningkatkan imunitas, fungsi kognitif, dan kesehatan mental.",
-            "link": "https://yankes.kemkes.go.id/view_artikel/205/manfaat-tidur-cukup-bagi-kesehatan-tubuh",
-            "icon": "😴"
-        },
-        {
-            "id": "drinking",
-            "title": "Manfaat Berhenti Minum Alkohol Selama Satu Bulan",
-            "summary": "Jika ingin melakukan perubahan ke arah yang lebih positif, berhenti minum alkohol dalam satu bulan mungkin dapat membantu memperbaiki kecanduan hingga meningkatkan kesadaran soal kesehatan.",
-            "link": "https://lifestyle.kompas.com/read/2023/01/05/094304920/7-efek-pada-tubuh-saat-berhenti-minum-alkohol-selama-satu-bulan?page=all",
-            "icon": "🍺"
-        },
-        {
-            "id": "bmi",
-            "title": "Waspadai Obesitas! Ketahui Penyebab dan Dampaknya yang Mengancam Kesehatan Anda",
-            "summary": "Obesitas memiliki dampak yang signifikan tidak hanya pada kesehatan fisik serta mental dan emosional, tetapi juga pada kualitas hidup dan umur harapan hidup seseorang.",
-            "link": "https://heartology.id/health-library/content/waspadai-obesitas-ketahui-penyebab-dan-dampaknya-yang-mengancam-kesehatan-anda/",
-            "icon": "😯"
-        },
-        {
-            "id": "lansia",
-            "title": "Berbagai Jenis Olahraga untuk Lansia Beserta Manfaatnya",
-            "summary": "Meski di usia yang tak lagi muda, para lansia dianjurkan untuk rutin melakukan aktivitas fisik. Nah, ada beberapa jenis olahraga untuk lansia yang dapat dilakukan untuk menjaga kebugaran tubuh dan menurunkan risiko berbagai penyakit akibat penuaan.",
-            "link": "https://www.alodokter.com/olah-tubuh-bagi-lansia#:~:text=Manfaat%20Olahraga%20bagi%20Lansia&text=Memperkuat%20otot%20dan%20sendi,gangguan%20pada%20otak%2C%20seperti%20demensia",
-            "icon": "🧘🏻"
-        }
-    ]
-
 def get_relevant_health_news(is_smoker,is_drinker,bmi,age, sbp, dbp):
     """Memilih berita kesehatan yang relevan berdasarkan kondisi pengguna."""
     news_database = [
@@ -141,7 +95,7 @@ def get_relevant_health_news(is_smoker,is_drinker,bmi,age, sbp, dbp):
     if age >= 60:
         relevant_news.append(next(item for item in news_database if item["id"] == "lansia"))
     relevant_news.append(next(item for item in news_database if item["id"] == "general"))
-    
+
     # Menghapus duplikat
     unique_news = []
     seen_ids = set()
@@ -156,46 +110,78 @@ st.set_page_config(page_title="Rekomendasi Kesehatan Personal", page_icon="❤�
 st.title("Rekomendasi Kesehatan & Berita")
 st.markdown("Masukkan data kesehatan Anda untuk mendapatkan saran gaya hidup dan berita kesehatan yang relevan.")
 
+# Get latest health data from session state
+latest_prediction_data = st.session_state.get('latest_prediction_data')
+
+# Set initial values for form fields based on session state or defaults
+initial_age = latest_prediction_data['age'] if latest_prediction_data else None
+initial_height = latest_prediction_data['height'] if latest_prediction_data else None
+initial_weight = latest_prediction_data['weight'] if latest_prediction_data else None
+initial_sbp = latest_prediction_data['sbp'] if latest_prediction_data else None
+initial_dbp = latest_prediction_data['dbp'] if latest_prediction_data else None
+initial_blds = latest_prediction_data['blds'] if latest_prediction_data else None
+initial_smoking_pred_text = "Ya" if latest_prediction_data and latest_prediction_data['smoking_prediction'] == 1 else "Tidak"
+initial_drinking_pred_text = "Ya" if latest_prediction_data and latest_prediction_data['drinking_prediction'] == 1 else "Tidak"
+
+
 with st.form("health_input_form"):
     st.header("Formulir Data Kesehatan")
     col1, col2 = st.columns(2)
     with col1:
-        age = st.number_input("Usia (Tahun)", 1, 120, 30)
-        height = st.number_input("Tinggi Badan (cm)", 50, 250, 170)
-        sbp = st.number_input("Tekanan Darah Sistolik (SBP)", 70, 250, 120)
-        blood_sugar = st.number_input("Gula Darah Puasa (mg/dL)", 50, 500, 90)
-        is_smoker = st.selectbox("Apakah Anda seorang perokok?", ("Tidak", "Ya"))
+        age = st.number_input("Usia (Tahun)", 1, 120, value=initial_age, placeholder="Masukkan usia...")
+        height = st.number_input("Tinggi Badan (cm)", 50, 250, value=initial_height, placeholder="Contoh: 170")
+        sbp = st.number_input("Tekanan Darah Sistolik (SBP)", 70, 250, value=initial_sbp, placeholder="Contoh: 120")
+        blood_sugar = st.number_input("Gula Darah Puasa (mg/dL)", 50, 500, value=initial_blds, placeholder="Contoh: 90")
+        is_smoker = st.selectbox("Apakah Anda seorang perokok?", ("Tidak", "Ya"), index=0 if initial_smoking_pred_text == "Tidak" else 1)
     with col2:
-        weight = st.number_input("Berat Badan (kg)", 10, 200, 65)
-        st.write(" ")
-        dbp = st.number_input("Tekanan Darah Diastolik (DBP)", 40, 200, 80)
-        st.write(" ")
-        is_drinker = st.selectbox("Apakah Anda mengonsumsi alkohol?", ("Tidak", "Ya"))
+        weight = st.number_input("Berat Badan (kg)", 10, 200, value=initial_weight, placeholder="Contoh: 65")
+        st.write(" ") # For spacing
+        dbp = st.number_input("Tekanan Darah Diastolik (DBP)", 40, 200, value=initial_dbp, placeholder="Contoh: 80")
+        st.write(" ") # For spacing
+        is_drinker = st.selectbox("Apakah Anda mengonsumsi alkohol?", ("Tidak", "Ya"), index=0 if initial_drinking_pred_text == "Tidak" else 1)
     submitted = st.form_submit_button("Dapatkan Hasil")
 
 if submitted:
-    bmi = calculate_bmi(height, weight)
-    recommendations_list = generate_recommendations(age, bmi, sbp, dbp, blood_sugar, is_smoker, is_drinker)
-    news_list = get_relevant_health_news(is_smoker, is_drinker, bmi, age, sbp, dbp)
+    # --- Input Validation ---
+    empty_fields_rec = []
+    if age is None:
+        empty_fields_rec.append("Usia (Tahun)")
+    if height is None:
+        empty_fields_rec.append("Tinggi Badan (cm)")
+    if weight is None:
+        empty_fields_rec.append("Berat Badan (kg)")
+    if sbp is None:
+        empty_fields_rec.append("Tekanan Darah Sistolik (SBP)")
+    if dbp is None:
+        empty_fields_rec.append("Tekanan Darah Diastolik (DBP)")
+    if blood_sugar is None:
+        empty_fields_rec.append("Gula Darah Puasa (mg/dL)")
 
-    st.markdown("---")
-    st.subheader("Hasil Analisis Kesehatan Anda")
-    
-    display_bmi_scale(bmi)
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.subheader("Rekomendasi Personal Untuk Anda")
-    for rec in recommendations_list:
-        st.success(rec, icon="✅")
+    if empty_fields_rec:
+        st.error(f"Data tidak lengkap. Harap isi kolom berikut: {', '.join(empty_fields_rec)}", icon="🚨")
+    else:
+        bmi = calculate_bmi(height, weight)
+        recommendations_list = generate_recommendations(age, bmi, sbp, dbp, blood_sugar, is_smoker, is_drinker)
+        news_list = get_relevant_health_news(is_smoker, is_drinker, bmi, age, sbp, dbp)
 
-    st.markdown("---")
-    st.subheader("Berita Kesehatan Terkait")
-    for news in news_list:
-        with st.container(border=True):
-            col1, col2 = st.columns([1, 4])
-            with col1:
-                st.markdown(f"<p style='font-size: 52px; text-align: center;'>{news['icon']}</p>", unsafe_allow_html=True)
-            with col2:
-                st.markdown(f"**{news['title']}**")
-                st.write(news['summary'])
-                st.page_link(news['link'], label="Baca Selengkapnya...", icon="➡️")
+        st.markdown("---")
+        st.subheader("Hasil Analisis Kesehatan Anda")
+
+        display_bmi_scale(bmi)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.subheader("Rekomendasi Personal Untuk Anda")
+        for rec in recommendations_list:
+            st.success(rec, icon="✅")
+
+        st.markdown("---")
+        st.subheader("Berita Kesehatan Terkait")
+        for news in news_list:
+            with st.container(border=True):
+                col1, col2 = st.columns([1, 4])
+                with col1:
+                    st.markdown(f"<p style='font-size: 52px; text-align: center;'>{news['icon']}</p>", unsafe_allow_html=True)
+                with col2:
+                    st.markdown(f"**{news['title']}**")
+                    st.write(news['summary'])
+                    st.page_link(news['link'], label="Baca Selengkapnya...", icon="➡️")
