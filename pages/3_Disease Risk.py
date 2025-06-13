@@ -4,7 +4,7 @@ import numpy as np
 
 # Cek autentikasi
 if not st.session_state.get('authenticated'):
-    st.warning('Mohon login terlebih dahulu.')
+    st.warning('Silahkan login terlebih dahulu.')
     st.stop()
     
 # Muat model yang telah dilatih

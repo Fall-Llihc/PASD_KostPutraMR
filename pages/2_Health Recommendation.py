@@ -3,7 +3,7 @@ import pandas as pd
 # from user_manager import get_latest_health_data # No longer directly fetching from DB for initial pre-fill
 
 if not st.session_state.get('authenticated'):
-    st.warning('Please login first.')
+    st.warning('Silahkan login terlebih dahulu.')
     st.stop()
 
 
