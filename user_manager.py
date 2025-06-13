@@ -17,6 +17,21 @@ def init_db():
                  action TEXT,
                  timestamp TEXT,
                  metadata TEXT)''')
+    # Health_data table
+    c.execute('''CREATE TABLE IF NOT EXISTS health_data (
+                 username TEXT,
+                 timestamp TEXT,
+                 age INTEGER,
+                 sex TEXT,
+                 height REAL,
+                 weight REAL,
+                 gamma_GTP REAL,
+                 smoking_prediction INTEGER,
+                 drinking_prediction INTEGER,
+                 SBP REAL,
+                 DBP REAL,
+                 BLDS REAL,
+                 PRIMARY KEY (username, timestamp))''')
     conn.commit()
     conn.close()
 
@@ -40,24 +55,62 @@ def authenticate_user(username, password):
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
-# ---------- HISTORY ----------
-def add_history(username, action, metadata=""):
+# # ---------- HISTORY ----------
+# def add_history(username, action, metadata=""):
+#     conn = sqlite3.connect("users.db")
+#     c = conn.cursor()
+#     timestamp = datetime.datetime.now().isoformat()
+#     c.execute("INSERT INTO history (username, action, timestamp, metadata) VALUES (?, ?, ?, ?)",
+#               (username, action, timestamp, metadata))
+#     conn.commit()
+#     conn.close()
+#
+# def get_history(username):
+#     conn = sqlite3.connect("users.db")
+#     c = conn.cursor()
+#     c.execute("SELECT action, timestamp, metadata FROM history WHERE username = ?", (username,))
+#     data = c.fetchall()
+#     conn.close()
+#     return data
+
+# ---------- HEALTH DATA ----------
+def add_health_data(username, age, sex, height, weight, gamma_gtp, smoking_prediction, drinking_prediction, sbp=None, dbp=None, blds=None):
     conn = sqlite3.connect("users.db")
     c = conn.cursor()
     timestamp = datetime.datetime.now().isoformat()
-    c.execute("INSERT INTO history (username, action, timestamp, metadata) VALUES (?, ?, ?, ?)",
-              (username, action, timestamp, metadata))
+    c.execute("""INSERT INTO health_data (username, timestamp, age, sex, height, weight, gamma_GTP,
+                 smoking_prediction, drinking_prediction, SBP, DBP, BLDS)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+              (username, timestamp, age, sex, height, weight, gamma_gtp,
+               smoking_prediction, drinking_prediction, sbp, dbp, blds))
     conn.commit()
     conn.close()
 
-def get_history(username):
+def get_latest_health_data(username):
     conn = sqlite3.connect("users.db")
     c = conn.cursor()
-    c.execute("SELECT action, timestamp, metadata FROM history WHERE username = ?", (username,))
+    c.execute("""SELECT age, sex, height, weight, gamma_GTP, smoking_prediction, drinking_prediction, SBP, DBP, BLDS, timestamp
+                 FROM health_data WHERE username = ? ORDER BY timestamp DESC LIMIT 1""", (username,))
+    data = c.fetchone()
+    conn.close()
+    return data # Returns a tuple or None
+
+def get_all_health_data(username):
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("""SELECT age, sex, height, weight, gamma_GTP, smoking_prediction, drinking_prediction, SBP, DBP, BLDS, timestamp
+                 FROM health_data WHERE username = ? ORDER BY timestamp ASC""", (username,))
     data = c.fetchall()
     conn.close()
-    return data
+    return data # Returns a list of tuples
 
+def delete_all_health_data(username):
+    """Deletes all health data entries for a specific user."""
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("DELETE FROM health_data WHERE username = ?", (username,))
+    conn.commit()
+    conn.close()
 
 def login():
     menu = st.sidebar.radio("Menu", ["Login", "Sign Up"])
@@ -95,5 +148,3 @@ def login():
 
 def logout():
     st.session_state.authenticated = False
-
-
