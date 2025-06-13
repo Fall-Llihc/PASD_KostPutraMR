@@ -7,7 +7,7 @@ from user_manager import get_all_health_data, delete_all_health_data # Import fu
 import io
 
 if not st.session_state.get('authenticated'):
-    st.warning('Silakan login terlebih dahulu.')
+    st.warning('Silahkan login terlebih dahulu.')
     st.stop()
 
 st.set_page_config(layout="wide")

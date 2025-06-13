@@ -5,7 +5,7 @@ import pickle
 from user_manager import add_health_data # Import the new function
 
 if not st.session_state.get('authenticated'):
-    st.warning('Please login first.')
+    st.warning('Silahkan login terlebih dahulu.')
     st.stop()
 
 # --- PAGE CONFIGURATION ---
