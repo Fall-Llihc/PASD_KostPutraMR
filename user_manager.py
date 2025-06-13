@@ -55,24 +55,6 @@ def authenticate_user(username, password):
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
-# # ---------- HISTORY ----------
-# def add_history(username, action, metadata=""):
-#     conn = sqlite3.connect("users.db")
-#     c = conn.cursor()
-#     timestamp = datetime.datetime.now().isoformat()
-#     c.execute("INSERT INTO history (username, action, timestamp, metadata) VALUES (?, ?, ?, ?)",
-#               (username, action, timestamp, metadata))
-#     conn.commit()
-#     conn.close()
-#
-# def get_history(username):
-#     conn = sqlite3.connect("users.db")
-#     c = conn.cursor()
-#     c.execute("SELECT action, timestamp, metadata FROM history WHERE username = ?", (username,))
-#     data = c.fetchall()
-#     conn.close()
-#     return data
-
 # ---------- HEALTH DATA ----------
 def add_health_data(username, age, sex, height, weight, gamma_gtp, smoking_prediction, drinking_prediction, sbp=None, dbp=None, blds=None):
     conn = sqlite3.connect("users.db")
