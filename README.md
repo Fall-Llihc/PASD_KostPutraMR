@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🩺 Aplikasi Dashboard Kesehatan
 
 Aplikasi web berbasis **Streamlit** yang memungkinkan pengguna untuk **membuat akun**, **login**, dan menggunakan berbagai **alat analisis kesehatan**, seperti prediksi risiko penyakit, rekomendasi kesehatan, dan prediksi kebiasaan merokok atau konsumsi alkohol. Aplikasi juga mencatat **riwayat aktivitas pengguna**.
@@ -55,3 +56,7 @@ pip install -r requirement.txt
 ```bash
 streamlit run main.py
 ```
+=======
+# PASD_KostPutraMR
+Test Branch Falih
+>>>>>>> aec55d5e6ccf2c0648045cf98307352f9dddac74
